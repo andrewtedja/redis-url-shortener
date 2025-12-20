@@ -7,4 +7,4 @@ COPY package*.json .
 RUN bun install
 COPY . .
 EXPOSE 3000
-CMD ["bun", "run", "index.ts"]
+CMD ["bun", "run", "app/index.ts"]
