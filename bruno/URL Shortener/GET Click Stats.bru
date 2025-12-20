@@ -1,0 +1,15 @@
+meta {
+  name: GET Click Stats
+  type: http
+  seq: 2
+}
+
+get {
+  url: http:/localhost:3000/stats/2
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

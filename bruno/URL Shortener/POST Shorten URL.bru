@@ -1,0 +1,22 @@
+meta {
+  name: POST Shorten URL
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:3000/shorten
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "url": "https://github.com"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
