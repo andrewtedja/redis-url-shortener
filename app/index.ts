@@ -1,14 +1,15 @@
 import { Hono } from "hono";
 import { redis } from "bun";
 import { toBase62 } from "./utils";
-import { getConnInfo } from "hono/bun";
+import { cors } from "hono/cors";
 
 const app = new Hono();
 
-// c: context (req, res)
+// ================== CORS ==================
+app.use("/*", cors());
 
 // ================== Health Check ==================
-app.get("/", (c) => {
+app.get("/health", (c) => {
 	return c.json({ message: "URL Shortener API", status: "running" });
 });
 
@@ -96,7 +97,7 @@ app.post("/shorten", async (c) => {
 
 	return c.json({
 		shortCode,
-		shortUrl: `http://localhost:3000/${shortCode}`,
+		shortUrl: `${process.env.BASE_URL || "http://localhost:3000"}/${shortCode}`,
 		originalUrl: url,
 		expiresIn: expiresIn || null,
 		rateLimitRemaining: maxRequests - currentCount - 1,
