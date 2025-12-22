@@ -8,52 +8,67 @@ import { toBase62 } from "./utils";
  * use namespace for everything
  * API: create short url + redirect to original url from code
  * use INCR buat idnya (url:counter)
- * url:counter, url:${code}
+ * url:counter, url:${code} url:${code}:clicks
  */
+
+// SELF NOTES
+// 302 itu temporary (ask server every req)
+// 301 itu permanent (browser caches redirect forever)
+// Kenapa make 302? -> biar bisa ganti destination, track clicks, etc
+// click:  curl -L http://localhost:3000/1
+// docker exec -it url-shortener-project-redis-1 redis-cli
 
 const app = new Hono();
 
 // c: context (req, res)
 
-// helper
-function measureTime<T>(
-	fn: () => Promise<T>
-): Promise<{ result: T; ms: number }> {
-	const start = performance.now();
-	return fn().then((result) => ({
-		result,
-		ms: Number((performance.now() - start).toFixed(2)),
-	}));
-}
-
-/// health
+// ================== Health Check ==================
 app.get("/", (c) => {
 	return c.json({ message: "URL Shortener API", status: "running" });
 });
 
-// POST /shorten
+// ================== [POST] /shorten ==================
 app.post("/shorten", async (c) => {
 	const body = await c.req.json();
-	const { url } = body;
+	const { url, expiresIn } = body;
 
 	if (!url || typeof url !== "string") {
 		return c.json({ error: "URL IS REQUIRED " }, 400);
 	}
 
+	if (
+		expiresIn !== undefined &&
+		(typeof expiresIn !== "number" || expiresIn <= 0)
+	) {
+		return c.json(
+			{ error: "expiresIn must be a positive number (seconds)" },
+			400
+		);
+	}
+
 	const id = await redis.incr("url:counter");
 	const shortCode = toBase62(id);
 
-	await redis.set(`url:${shortCode}`, url);
+	if (expiresIn) {
+		await redis.set(`url:${shortCode}`, url);
+		await redis.set(`url:${shortCode}:clicks`, "0");
+		await redis.expire(`url:${shortCode}`, expiresIn);
+		await redis.expire(`url:${shortCode}:clicks`, expiresIn);
+	} else {
+		//no expire
+		await redis.set(`url:${shortCode}`, url);
+		await redis.set(`url:${shortCode}:clicks`, "0");
+	}
 
 	return c.json({
 		shortCode,
-		shortUrl: `httpL//localhost:3000/${shortCode}`,
+		shortUrl: `http://localhost:3000/${shortCode}`,
 		originalUrl: url,
+		expiresIn: expiresIn || null,
 	});
 });
 
-// GET /stats/:code
-
+// ================== [GET] /stats/:code ==================
 app.get("/stats/:code", async (c) => {
 	const code = c.req.param("code");
 
@@ -71,14 +86,7 @@ app.get("/stats/:code", async (c) => {
 	});
 });
 
-// SELF NOTES
-// 302 itu temporary (ask server every req)
-// 301 itu permanent (browser caches redirect forever)
-// Kenapa make 302? -> biar bisa ganti destination, track clicks, etc
-// click:  curl -L http://localhost:3000/1
-// docker exec -it url-shortener-project-redis-1 redis-cli
-
-// TESTER ENDPOINT
+// ================== TESTER ENDPOINT ==================
 app.get("/perf-test", async (c) => {
 	await redis.set("perf:ping", "ok");
 
@@ -99,7 +107,7 @@ app.get("/perf-test", async (c) => {
 	});
 });
 
-// GET /:code
+// ================== [GET] /:code ==================
 app.get("/:code", async (c) => {
 	const code = c.req.param("code");
 
