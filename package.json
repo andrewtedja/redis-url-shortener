@@ -7,7 +7,8 @@
 		"@types/bun": "latest"
 	},
 	"scripts": {
-		"dev": "bun --hot app/index.ts"
+		"dev": "bun --hot app/index.ts",
+		"start": "bun app/index.ts"
 	},
 	"peerDependencies": {
 		"typescript": "^5"
