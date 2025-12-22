@@ -17,6 +17,7 @@
 - url:counter, url:${code} url:${code}:clicks
 - TTL expr ditaro both di urlcode and clicks (cascading)
 - Rate limit itu by IP (berapa requests each IP address can make), not by URL
+- Rate limit bisa pake normal expiry (60), bisa pake sliding window yang slides every requests (better, bisa show retryAfter)
 
 ### EXTRA
 

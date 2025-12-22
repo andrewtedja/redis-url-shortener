@@ -17,13 +17,52 @@ app.post("/shorten", async (c) => {
 	const body = await c.req.json();
 	const { url, expiresIn } = body;
 
-	const ip = "127.0.0.1";
-
-	// const connInfo = getConnInfo(c);
-	// const ip = connInfo.remote.address || "unknown";
-
+	const ip = c.req.header("x-forwarded-for") || "127.0.0.1";
 	const rateLimitKey = `ratelimit:${ip}`;
-	const requestCount = await redis.incr(rateLimitKey);
+
+	// sliding window limiter
+	const now = Date.now();
+	const windowS = 60;
+	const windowMs = windowS * 1000;
+	const windowStart = now - windowMs;
+	const maxRequests = 10;
+
+	// remove timestamp older than 60s
+	await redis.send("ZREMRANGEBYSCORE", [
+		rateLimitKey,
+		"0",
+		windowStart.toString(),
+	]);
+
+	// curr request in window
+	const currentCount = (await redis.send("ZCARD", [rateLimitKey])) as number;
+
+	if (currentCount >= maxRequests) {
+		const oldestTimestamps = (await redis.send("ZRANGE", [
+			rateLimitKey,
+			"0",
+			"0",
+			"WITHSCORES",
+		])) as string[];
+		const oldestTimestamp = oldestTimestamps[1]
+			? parseInt(oldestTimestamps[1])
+			: now - windowMs;
+		const retryAfter = Math.ceil((oldestTimestamp + windowMs - now) / 1000);
+
+		return c.json(
+			{
+				error: "Too many requests",
+				retryAfter: `${retryAfter} seconds`,
+				limit: maxRequests,
+				window: windowS.toString() + " seconds",
+			},
+			429
+		);
+	}
+
+	// add current req timestamp
+	await redis.send("ZADD", [rateLimitKey, now.toString(), now.toString()]);
+	await redis.expire(rateLimitKey, 120); // 2 menit
 
 	// Validation
 	if (!url || typeof url !== "string") {
@@ -55,20 +94,12 @@ app.post("/shorten", async (c) => {
 		await redis.set(`url:${shortCode}:clicks`, "0");
 	}
 
-	// Rate limit
-	if (requestCount === 1) {
-		await redis.expire(rateLimitKey, 60);
-	}
-
-	if (requestCount > 10) {
-		return c.json({ error: "Too many requests. Try again later." }, 429);
-	}
-
 	return c.json({
 		shortCode,
 		shortUrl: `http://localhost:3000/${shortCode}`,
 		originalUrl: url,
 		expiresIn: expiresIn || null,
+		rateLimitRemaining: maxRequests - currentCount - 1,
 	});
 });
 
