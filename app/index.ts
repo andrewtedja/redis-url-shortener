@@ -1,22 +1,7 @@
 import { Hono } from "hono";
 import { redis } from "bun";
 import { toBase62 } from "./utils";
-
-/**
- * Plan: bikin base62 converter for id => code (key)
- * KV: code (key) -> url (value)
- * use namespace for everything
- * API: create short url + redirect to original url from code
- * use INCR buat idnya (url:counter)
- * url:counter, url:${code} url:${code}:clicks
- */
-
-// SELF NOTES
-// 302 itu temporary (ask server every req)
-// 301 itu permanent (browser caches redirect forever)
-// Kenapa make 302? -> biar bisa ganti destination, track clicks, etc
-// click:  curl -L http://localhost:3000/1
-// docker exec -it url-shortener-project-redis-1 redis-cli
+import { getConnInfo } from "hono/bun";
 
 const app = new Hono();
 
@@ -32,6 +17,15 @@ app.post("/shorten", async (c) => {
 	const body = await c.req.json();
 	const { url, expiresIn } = body;
 
+	const ip = "127.0.0.1";
+
+	// const connInfo = getConnInfo(c);
+	// const ip = connInfo.remote.address || "unknown";
+
+	const rateLimitKey = `ratelimit:${ip}`;
+	const requestCount = await redis.incr(rateLimitKey);
+
+	// Validation
 	if (!url || typeof url !== "string") {
 		return c.json({ error: "URL IS REQUIRED " }, 400);
 	}
@@ -46,6 +40,7 @@ app.post("/shorten", async (c) => {
 		);
 	}
 
+	// Counter and TTL
 	const id = await redis.incr("url:counter");
 	const shortCode = toBase62(id);
 
@@ -58,6 +53,15 @@ app.post("/shorten", async (c) => {
 		//no expire
 		await redis.set(`url:${shortCode}`, url);
 		await redis.set(`url:${shortCode}:clicks`, "0");
+	}
+
+	// Rate limit
+	if (requestCount === 1) {
+		await redis.expire(rateLimitKey, 60);
+	}
+
+	if (requestCount > 10) {
+		return c.json({ error: "Too many requests. Try again later." }, 429);
 	}
 
 	return c.json({
