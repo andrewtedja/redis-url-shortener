@@ -7,14 +7,14 @@
 		"@types/bun": "latest"
 	},
 	"scripts": {
-		"dev": "bun --hot app/index.ts",
-		"start": "bun app/index.ts"
+		"dev": "bun --hot server.ts",
+		"start": "bun server.ts"
 	},
 	"peerDependencies": {
 		"typescript": "^5"
 	},
 	"dependencies": {
-		"hono": "^4.11.1",
-		"redis": "^5.10.0"
+		"@upstash/redis": "^1.34.3",
+		"hono": "^4.11.1"
 	}
 }
