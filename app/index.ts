@@ -79,7 +79,7 @@ app.post("/api/shorten", async (c) => {
 	}
 
 	// Counter and TTL
-	const id = await redis.incr("url:counter");
+	const id = (await redis.incr("url:counter")) as number;
 	const shortCode = toBase62(id);
 
 	if (expiresIn) {
@@ -107,8 +107,8 @@ app.get("/api/stats/:code", async (c) => {
 	const code = c.req.param("code");
 
 	const [url, clicks] = await Promise.all([
-		redis.get(`url:${code}`),
-		redis.get(`url:${code}:clicks`),
+		redis.get<string>(`url:${code}`),
+		redis.get<string>(`url:${code}:clicks`),
 	]);
 	if (!url) {
 		return c.json({ error: "SHORT URL NOT FOUND" }, 404);
@@ -145,7 +145,7 @@ app.get("/api/perf-test", async (c) => {
 app.get("/:code", async (c) => {
 	const code = c.req.param("code");
 
-	const url = await redis.get(`url:${code}`);
+	const url = await redis.get<string>(`url:${code}`);
 	if (!url) {
 		return c.notFound();
 	}

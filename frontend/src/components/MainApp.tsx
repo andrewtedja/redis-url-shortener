@@ -113,7 +113,7 @@ export default function MainApp() {
 
 			<div className="max-w-3xl mx-auto px-6 py-12 ">
 				{/* ================== SHORTEN FORM ================== */}
-				<div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-8 hover:shadow-md transition-shadow duration-300">
+				<div className="bg-white rounded-3xl  border-2 border-gray-200 p-8 mb-8 hover:shadow-md transition-shadow duration-300">
 					<form onSubmit={handleShorten} className="space-y-5">
 						<div>
 							<label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -166,46 +166,47 @@ export default function MainApp() {
 
 					{/* ================== SHORTEN RESULT ================== */}
 					{shortenResult && (
-						<div className="mt-6 p-6 bg-emerald-50 border border-green-200 rounded-xl animate-fadeIn">
+						<div className="mt-8 p-6 bg-white border border-gray-200 rounded-lg">
+							{/* URL Section */}
 							<div className="flex items-start justify-between gap-4">
 								<div className="flex-1 min-w-0">
-									<p className="text-sm font-semibold text-gray-700 mb-2">
-										Short URL
-									</p>
+									<p className="text-sm text-gray-600 mb-2">Short URL</p>
 									<a
 										href={shortenResult.shortUrl}
 										target="_blank"
 										rel="noopener noreferrer"
-										className="text-2xl font-mono text-indigo-600 hover:text-indigo-700 hover:underline break-all transition-colors"
+										className="text-lg font-mono text-blue-600 hover:text-blue-700 hover:underline break-all"
 									>
 										{shortenResult.shortUrl}
 									</a>
 								</div>
+
 								<button
 									onClick={handleCopy}
-									className={`px-5 py-2.5 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
+									className={`px-4 py-2 rounded-lg font-medium transition-colors ${
 										copied
-											? "bg-green-600 text-white shadow-md"
-											: "bg-white text-gray-700 border border-gray-300 hover:border-gray-400 hover:shadow-sm"
+											? "bg-indigo-500 text-white"
+											: "bg-gray-100 text-gray-700 hover:bg-gray-200"
 									}`}
 								>
 									{copied ? "Copied!" : "Copy"}
 								</button>
 							</div>
-							<div className="grid grid-cols-2 gap-4 mt-5 pt-5 border-t border-green-200/50">
+
+							{/* Stats */}
+							<div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-gray-100">
 								<div>
-									<p className="text-xs font-medium text-gray-600 mb-1">
-										Short Code
-									</p>
-									<p className="font-mono text-3xl font-semibold text-gray-900">
+									<p className="text-sm text-gray-600 mb-1">Short Code</p>
+									<p className="text-2xl font-mono font-semibold text-gray-900">
 										{shortenResult.shortCode}
 									</p>
 								</div>
+
 								<div>
-									<p className="text-xs font-medium text-gray-600 mb-1">
-										Rate Limit Remaining
+									<p className="text-sm text-gray-600 mb-1">
+										Requests Left (Rate Limit)
 									</p>
-									<p className="font-mono text-xl font-semibold text-gray-900">
+									<p className="text-2xl font-semibold text-gray-900">
 										{shortenResult.rateLimitRemaining}/10
 									</p>
 								</div>
@@ -214,14 +215,14 @@ export default function MainApp() {
 					)}
 
 					{shortenError && (
-						<div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl animate-fadeIn">
-							<p className="text-sm font-medium text-red-700">{shortenError}</p>
+						<div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+							<p className="text-sm text-red-700">{shortenError}</p>
 						</div>
 					)}
 				</div>
 
 				{/* ================== STATS VIEWER ================== */}
-				<div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 hover:shadow-md transition-shadow duration-300">
+				<div className="bg-white rounded-3xl border-2 border-gray-200 p-8 hover:shadow-md transition-shadow duration-300">
 					<div className="flex items-center justify-between mb-6">
 						<h2 className="text-xl font-bold text-gray-900">Analytics</h2>
 						<span className="text-xs font-semibold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full">
@@ -246,6 +247,7 @@ export default function MainApp() {
 							className="flex-1 px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
 						/>
 						<button
+							type="button"
 							onClick={handleStats}
 							disabled={statsLoading || !statsCode.trim()}
 							className="px-8 py-3.5 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transform hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md hover:shadow-lg"
