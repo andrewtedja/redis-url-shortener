@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Navbar from "./navbar";
 
-const API_BASE = "";
+const API_BASE = import.meta.env.VITE_API_URL || "";
 
 interface ShortenResponse {
 	shortCode: string;

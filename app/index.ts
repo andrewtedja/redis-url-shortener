@@ -1,7 +1,12 @@
 import { Hono } from "hono";
-import { redis } from "bun";
+import { Redis } from "@upstash/redis";
 import { toBase62 } from "./utils";
 import { cors } from "hono/cors";
+
+const redis = new Redis({
+	url: process.env.UPSTASH_REDIS_REST_URL!,
+	token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
 const app = new Hono();
 
@@ -29,24 +34,17 @@ app.post("/api/shorten", async (c) => {
 	const maxRequests = 10;
 
 	// remove timestamp older than 60s
-	await redis.send("ZREMRANGEBYSCORE", [
-		rateLimitKey,
-		"0",
-		windowStart.toString(),
-	]);
+	await redis.zremrangebyscore(rateLimitKey, 0, windowStart);
 
 	// curr request in window
-	const currentCount = (await redis.send("ZCARD", [rateLimitKey])) as number;
+	const currentCount = await redis.zcard(rateLimitKey);
 
 	if (currentCount >= maxRequests) {
-		const oldestTimestamps = (await redis.send("ZRANGE", [
-			rateLimitKey,
-			"0",
-			"0",
-			"WITHSCORES",
-		])) as string[];
+		const oldestTimestamps = await redis.zrange(rateLimitKey, 0, 0, {
+			withScores: true,
+		});
 		const oldestTimestamp = oldestTimestamps[1]
-			? parseInt(oldestTimestamps[1])
+			? parseInt(oldestTimestamps[1] as string)
 			: now - windowMs;
 		const retryAfter = Math.ceil((oldestTimestamp + windowMs - now) / 1000);
 
@@ -62,7 +60,7 @@ app.post("/api/shorten", async (c) => {
 	}
 
 	// add current req timestamp
-	await redis.send("ZADD", [rateLimitKey, now.toString(), now.toString()]);
+	await redis.zadd(rateLimitKey, { score: now, member: now.toString() });
 	await redis.expire(rateLimitKey, 120); // 2 menit
 
 	// Validation
