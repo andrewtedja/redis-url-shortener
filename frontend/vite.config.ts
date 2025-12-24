@@ -6,9 +6,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/shorten': 'http://localhost:3000',
-      '/stats': 'http://localhost:3000',
-      '/health': 'http://localhost:3000',
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      }
     }
   }
 })
