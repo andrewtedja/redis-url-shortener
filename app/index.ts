@@ -9,12 +9,12 @@ const app = new Hono();
 app.use("/*", cors());
 
 // ================== Health Check ==================
-app.get("/health", (c) => {
+app.get("/api/health", (c) => {
 	return c.json({ message: "URL Shortener API", status: "running" });
 });
 
-// ================== [POST] /shorten ==================
-app.post("/shorten", async (c) => {
+// ================== [POST] /api/shorten ==================
+app.post("/api/shorten", async (c) => {
 	const body = await c.req.json();
 	const { url, expiresIn } = body;
 
@@ -104,8 +104,8 @@ app.post("/shorten", async (c) => {
 	});
 });
 
-// ================== [GET] /stats/:code ==================
-app.get("/stats/:code", async (c) => {
+// ================== [GET] /api/stats/:code ==================
+app.get("/api/stats/:code", async (c) => {
 	const code = c.req.param("code");
 
 	const [url, clicks] = await Promise.all([
@@ -123,7 +123,7 @@ app.get("/stats/:code", async (c) => {
 });
 
 // ================== TESTER ENDPOINT ==================
-app.get("/perf-test", async (c) => {
+app.get("/api/perf-test", async (c) => {
 	await redis.set("perf:ping", "ok");
 
 	// Redis query
