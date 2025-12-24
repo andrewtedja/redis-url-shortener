@@ -149,7 +149,7 @@ app.get("/:code", async (c) => {
 
 	const url = await redis.get(`url:${code}`);
 	if (!url) {
-		return c.json({ error: "SHORT URL NOT FOUND" }, 404);
+		return c.notFound();
 	}
 
 	await redis.incr(`url:${code}:clicks`);
