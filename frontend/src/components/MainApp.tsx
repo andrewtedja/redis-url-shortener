@@ -108,223 +108,171 @@ export default function MainApp() {
 	};
 
 	return (
-		<div className="bg-gradient-to-br from-gray-50 via-indigo-50/30 to-gray-100 min-h-screen">
+		<div className="min-h-screen bg-gray-50">
 			<Navbar />
 
-			<div className="max-w-3xl mx-auto px-6 py-12 ">
-				{/* ================== SHORTEN FORM ================== */}
-				<div className="bg-white rounded-3xl  border-2 border-gray-200 p-8 mb-8 hover:shadow-md transition-shadow duration-300">
-					<form onSubmit={handleShorten} className="space-y-5">
-						<div>
-							<label className="block text-sm font-semibold text-gray-700 mb-2">
-								Destination URL
-							</label>
-							<input
-								type="url"
-								value={url}
-								onChange={(e) => setUrl(e.target.value)}
-								placeholder="https://urlpanjangbanget.com"
-								required
-								disabled={shortenLoading}
-								className="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-							/>
+			<div className="max-w-7xl mx-auto px-4 py-8">
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+					{/* ================== SHORTEN FORM ================== */}
+					<div className="bg-white rounded-lg shadow p-6 h-fit lg:sticky lg:top-8">
+						<div className="mb-6">
+							<h2 className="text-xl font-bold text-gray-900 mb-2">
+								Shorten URL
+							</h2>
+							<p className="text-sm text-gray-600">Create a short link</p>
 						</div>
 
-						<div>
-							<label className="block text-sm font-semibold text-gray-700 mb-2">
-								Time to Live (optional)
-							</label>
-							<input
-								type="number"
-								value={expiresIn}
-								onChange={(e) => setExpiresIn(e.target.value)}
-								placeholder="3600 (seconds)"
-								min="1"
+						<form onSubmit={handleShorten} className="space-y-4">
+							<div>
+								<label className="block text-sm font-medium text-gray-700 mb-2">
+									URL
+								</label>
+								<input
+									type="url"
+									value={url}
+									onChange={(e) => setUrl(e.target.value)}
+									placeholder="https://example.com/very-long-url"
+									required
+									disabled={shortenLoading}
+									className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-indigo-500 outline-none disabled:bg-gray-50"
+								/>
+							</div>
+
+							<div>
+								<label className="block text-sm font-medium text-gray-700 mb-2">
+									Expires in (seconds)
+								</label>
+								<input
+									type="number"
+									value={expiresIn}
+									onChange={(e) => setExpiresIn(e.target.value)}
+									placeholder="3600"
+									min="1"
+									disabled={shortenLoading}
+									className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-indigo-500 outline-none disabled:bg-gray-50"
+								/>
+								<p className="text-xs text-gray-500 mt-1">
+									Optional. Leave empty for no expiration.
+								</p>
+							</div>
+
+							<button
+								type="submit"
 								disabled={shortenLoading}
-								className="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-							/>
-							<p className="text-xs text-gray-500 mt-2">
-								Auto-expires - Redis TTL
-							</p>
-						</div>
+								className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+							>
+								{shortenLoading ? "Shortening..." : "Shorten URL"}
+							</button>
+						</form>
 
-						<button
-							type="submit"
-							disabled={shortenLoading}
-							className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 text-white py-4 rounded-xl font-semibold hover:from-indigo-600 hover:to-indigo-700 transform hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md hover:shadow-lg"
-						>
-							{shortenLoading ? (
-								<span className="flex items-center justify-center gap-2">
-									<div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-									Processing...
-								</span>
-							) : (
-								"Generate Short URL"
-							)}
-						</button>
-					</form>
-
-					{/* ================== SHORTEN RESULT ================== */}
-					{shortenResult && (
-						<div className="mt-8 p-6 bg-white border border-gray-200 rounded-lg">
-							{/* URL Section */}
-							<div className="flex items-start justify-between gap-4">
-								<div className="flex-1 min-w-0">
-									<p className="text-sm text-gray-600 mb-2">Short URL</p>
+						{/* ================== SHORTEN RESULT ================== */}
+						{shortenResult && (
+							<div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-md">
+								<p className="text-sm text-gray-600 mb-2">Short URL:</p>
+								<div className="flex items-center gap-2">
 									<a
 										href={shortenResult.shortUrl}
 										target="_blank"
 										rel="noopener noreferrer"
-										className="text-lg font-mono text-blue-600 hover:text-blue-700 hover:underline break-all"
+										className="flex-1 text-indigo-600 hover:underline break-all font-mono text-sm"
 									>
 										{shortenResult.shortUrl}
 									</a>
+									<button
+										onClick={handleCopy}
+										className="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
+									>
+										{copied ? "Copied!" : "Copy"}
+									</button>
 								</div>
-
-								<button
-									onClick={handleCopy}
-									className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-										copied
-											? "bg-indigo-500 text-white"
-											: "bg-gray-100 text-gray-700 hover:bg-gray-200"
-									}`}
-								>
-									{copied ? "Copied!" : "Copy"}
-								</button>
-							</div>
-
-							{/* Stats */}
-							<div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-gray-100">
-								<div>
-									<p className="text-sm text-gray-600 mb-1">Short Code</p>
-									<p className="text-2xl font-mono font-semibold text-gray-900">
-										{shortenResult.shortCode}
-									</p>
-								</div>
-
-								<div>
-									<p className="text-sm text-gray-600 mb-1">
-										Requests Left (Rate Limit)
-									</p>
-									<p className="text-2xl font-semibold text-gray-900">
-										{shortenResult.rateLimitRemaining}/10
-									</p>
+								<div className="mt-3 text-xs text-gray-600">
+									<p>Code: {shortenResult.shortCode}</p>
+									<p>Rate Limit: {shortenResult.rateLimitRemaining}/10</p>
 								</div>
 							</div>
-						</div>
-					)}
+						)}
 
-					{shortenError && (
-						<div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-							<p className="text-sm text-red-700">{shortenError}</p>
-						</div>
-					)}
-				</div>
-
-				{/* ================== STATS VIEWER ================== */}
-				<div className="bg-white rounded-3xl border-2 border-gray-200 p-8 hover:shadow-md transition-shadow duration-300">
-					<div className="flex items-center justify-between mb-6">
-						<h2 className="text-xl font-bold text-gray-900">Analytics</h2>
-						<span className="text-xs font-semibold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full">
-							Intentionally decoupled from URL Creation and made for
-							fetch-testing
-						</span>
+						{shortenError && (
+							<div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+								<p className="text-sm text-red-800">{shortenError}</p>
+							</div>
+						)}
 					</div>
 
-					<div className="flex gap-3">
-						<input
-							type="text"
-							value={statsCode}
-							onChange={(e) => setStatsCode(e.target.value)}
-							onKeyDown={(e) => {
-								if (e.key === "Enter") {
-									e.preventDefault();
-									handleStats();
-								}
-							}}
-							placeholder="Enter short code"
-							disabled={statsLoading}
-							className="flex-1 px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-						/>
-						<button
-							type="button"
-							onClick={handleStats}
-							disabled={statsLoading || !statsCode.trim()}
-							className="px-8 py-3.5 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transform hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md hover:shadow-lg"
-						>
-							{statsLoading ? (
-								<div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-							) : (
-								"Fetch"
-							)}
-						</button>
-					</div>
+					{/* ================== STATS VIEWER ================== */}
+					<div className="bg-white rounded-lg shadow p-6">
+						<div className="mb-6">
+							<h2 className="text-xl font-bold text-gray-900 mb-2">
+								Analytics
+							</h2>
+							<p className="text-sm text-gray-600">
+								View stats for a short URL
+							</p>
+						</div>
 
-					{statsResult && (
-						<div className="mt-6 animate-fadeIn">
-							<div className="p-6 bg-indigo-50 to-indigo-100 rounded-xl border border-indigo-200">
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+						<div className="flex gap-2">
+							<input
+								type="text"
+								value={statsCode}
+								onChange={(e) => setStatsCode(e.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === "Enter") {
+										e.preventDefault();
+										handleStats();
+									}
+								}}
+								placeholder="Enter short code"
+								disabled={statsLoading}
+								className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:border-indigo-500 outline-none disabled:bg-gray-50"
+							/>
+							<button
+								type="button"
+								onClick={handleStats}
+								disabled={statsLoading || !statsCode.trim()}
+								className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+							>
+								{statsLoading ? "Loading..." : "Get Stats"}
+							</button>
+						</div>
+
+						{statsResult && (
+							<div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+								<div className="space-y-3">
 									<div>
-										<p className="text-sm font-semibold text-gray-700 mb-2">
-											Destination
-										</p>
+										<p className="text-xs text-gray-600 mb-1">Original URL:</p>
 										<a
 											href={statsResult.originalUrl}
 											target="_blank"
 											rel="noopener noreferrer"
-											className="text-indigo-600 hover:text-indigo-700 hover:underline break-all font-medium transition-colors"
+											className="text-sm text-indigo-600 hover:underline break-all"
 										>
 											{statsResult.originalUrl}
 										</a>
 									</div>
 									<div>
-										<p className="text-sm font-semibold text-gray-700 mb-2">
-											Total Visits
-										</p>
-										<p className="text-5xl font-bold text-gray-900 tabular-nums">
+										<p className="text-xs text-gray-600 mb-1">Clicks:</p>
+										<p className="text-2xl font-bold text-gray-900">
 											{statsResult.clicks}
 										</p>
 									</div>
-								</div>
-
-								{/* ================== REDIS PERFORMANCE ================== */}
-								<div className="pt-6 border-t border-indigo-200  flex flex-col">
-									<div className="bg-emerald-50 rounded-lg p-4 border border-green-200">
-										<p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">
-											Redis Fetch Time
-										</p>
-										<p className="text-3xl font-bold text-green-600 tabular-nums">
-											{queryTime}ms
+									<div>
+										<p className="text-xs text-gray-600 mb-1">Query Time:</p>
+										<p className="text-lg font-semibold text-green-600">
+											{queryTime} ms
 										</p>
 									</div>
 								</div>
 							</div>
-						</div>
-					)}
+						)}
 
-					{statsError && (
-						<div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl animate-fadeIn">
-							<p className="text-sm font-medium text-red-700">{statsError}</p>
-						</div>
-					)}
+						{statsError && (
+							<div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+								<p className="text-sm text-red-800">{statsError}</p>
+							</div>
+						)}
+					</div>
 				</div>
 			</div>
-
-			<style>{`
-			@keyframes fadeIn {
-				from {
-					opacity: 0;
-					transform: translateY(-10px);
-				}
-				to {
-					opacity: 1;
-					transform: translateY(0);
-				}
-			}
-			.animate-fadeIn {
-				animation: fadeIn 0.3s ease-out;
-			}
-		`}</style>
 		</div>
 	);
 }
