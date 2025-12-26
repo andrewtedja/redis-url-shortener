@@ -9,7 +9,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue?logo=typescript)](https://typescriptlang.org)
 [![Deployed](https://img.shields.io/badge/Deployed-Live-green)](https://shortify-25gb.onrender.com)
 
-**Live Demo:** [https://shortify.vercel.app](https://shortify.vercel.app)
+**Live Demo:** [https://shortify-app-alpha.vercel.app/]([https://shortify.vercel.app](https://shortify-app-alpha.vercel.app/))
 **API Endpoint:** [https://shortify-25gb.onrender.com](https://shortify-25gb.onrender.com/api/health)
 
 ---
